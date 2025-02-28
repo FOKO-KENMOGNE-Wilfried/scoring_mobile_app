@@ -1,6 +1,6 @@
 import 'react-native-reanimated';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { StatusBar } from 'react-native';
@@ -14,6 +14,8 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+  const params = useLocalSearchParams();
+
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -26,8 +28,13 @@ export default function RootLayout() {
 
   return (
     <>
-      <Stack screenOptions={{ headerShown: false}}>
-        <Stack.Screen name="(tabs)" />
+      <Stack screenOptions={{
+          headerShown: true,
+          headerBackTitle: "Retour",
+          headerTitle: params.title?.toString() || "",
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar />
