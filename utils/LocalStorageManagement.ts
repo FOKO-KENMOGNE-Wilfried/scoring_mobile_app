@@ -29,3 +29,20 @@ export class LocalStorageManagement {
     };
 
 }
+
+// import SecureStore from 'expo-secure-store';
+
+// export class LocalStorageManagement {
+//   static setItem = async (key: string, value: any) => {
+//     await SecureStore.setItemAsync(key, JSON.stringify(value));
+//   };
+
+//   static getItem = async (key: string) => {
+//     const value = await SecureStore.getItemAsync(key);
+//     return value ? JSON.parse(value) : null;
+//   };
+
+//   static removeItem = async (key: string) => {
+//     await SecureStore.deleteItemAsync(key);
+//   };
+// }

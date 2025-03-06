@@ -1,5 +1,5 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
@@ -7,8 +7,22 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
 
 export default function TabLayout() {
+
+  const router = useRouter();
+
+    useEffect(() => {
+      const fetchToken = async () => {
+        const res = await LocalStorageManagement.getItem('token');
+        if (!res) {
+          router.replace("/pages/login")
+        };
+        console.log(res);
+      }
+      fetchToken();
+    }, []);
 
   return (
     <Tabs

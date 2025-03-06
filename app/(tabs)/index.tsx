@@ -3,19 +3,16 @@ import { StyleSheet, Dimensions, Text, View, Image } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
+import { useEffect, useState } from 'react';
 
 export default function HomeScreen() {
 
   const router = useRouter();
 
-
-  // const token = await LocalStorageManagement.getItem('token');
-
-  // if( true ) {
-  //   return <Redirect href="/pages/login" />;
-  // }
+  const [userRole, setUserRole] = useState<"employee" | "admin" | "controller">("admin");
 
   return (
+    userRole === "employee" ?
     <View style={styles.container}>
         <View style={{
           borderWidth: 1,
@@ -68,23 +65,29 @@ export default function HomeScreen() {
             fontWeight: "semibold",
             color: "gray"
           }}>Demarrer votre procedure de pointage !</Text>
-          <View style={{
-            display: "flex",
-            justifyContent: "space-around",
-            alignItems: "center",
-            flexDirection: "row",
-            gap: 10,
-            marginBottom: 10,
-            backgroundColor: "#8FA3B5",
-            height: 120,
-            borderRadius: 10,
-          }} onTouchStart={() => router.push({ pathname: "/pages/scoringByController", params: { title: "Pointage via un controller" } })}>
-            {/* <Image source={require("")}></Image> */}
-            <Text style={{
-              color: "white",
-              fontSize: 15
-            }}>Envoyer une requete au controller</Text>
-          </View>
+          { userRole == "employee" ?
+            <View style={{
+              display: "flex",
+              justifyContent: "space-around",
+              alignItems: "center",
+              flexDirection: "row",
+              gap: 10,
+              marginBottom: 10,
+              backgroundColor: "#8FA3B5",
+              height: 120,
+              borderRadius: 10,
+            }}
+            onTouchStart={() => router.push({ pathname: "/pages/scoringByController", params: { title: "Pointage via un controller" } })}
+            >
+              {/* <Image source={require("")}></Image> */}
+              <Text style={{
+                color: "white",
+                fontSize: 15
+              }}>Envoyer une requete au controller</Text>
+            </View>
+          :
+          <View></View>
+          }
           <View style={{
             display: "flex",
             justifyContent: "space-around",
@@ -104,6 +107,92 @@ export default function HomeScreen() {
           </View>
         </View>
     </View>
+    :
+    <View style={styles.container}>
+      <View style={{
+        borderWidth: 1,
+        padding: 20,
+        borderRadius: 10,
+        marginBottom: 10,
+        justifyContent: "center",
+        borderColor: "black"
+      }}>
+        <Text style={{
+          fontWeight: "semibold",
+          fontSize: 24,
+        }}>Bon retour</Text>
+        <Text style={{
+          fontWeight: "bold",
+          fontSize: 24,
+        }}>FOKO KENMOGNE Wilfried</Text>
+      </View>
+      {/*  */}
+      <View>
+        <Text>Que voulez-vous faire ?</Text>
+        <View style={{
+          marginTop: 40,
+          display: "flex",
+          flexDirection: "row",
+          marginLeft: 50,
+          flexWrap: "wrap",
+          gap: 10,
+          marginBottom: 10,
+        }}>
+          <View style={{
+              display: "flex",
+              justifyContent: "space-around",
+              paddingHorizontal: 10,
+              alignItems: "center",
+              backgroundColor: "#8FA3B5",
+              height: 150,
+              width: 150,
+              borderRadius: 10,
+            }} onTouchStart={() => router.push({ pathname: "/pages/registerForm", params: { title: "Ajouter un employee" } })}>
+              {/* <Image source={require("")}></Image> */}
+              <Text style={{
+                color: "white",
+                fontSize: 15,
+                textAlign: "center"
+              }}>Ajouter un employee</Text>
+            </View>
+
+            {/* <View style={{
+              display: "flex",
+              justifyContent: "space-around",
+              paddingHorizontal: 10,
+              alignItems: "center",
+              backgroundColor: "#8FA3B5",
+              height: 150,
+              width: 150,
+              borderRadius: 10,
+            }} onTouchStart={() => router.push({ pathname: "/", params: { title: "Pointage via un controller" } })}>
+              <Text style={{
+                color: "white",
+                fontSize: 15,
+                textAlign: "center"
+              }}>Assigner un employee a un site</Text>
+            </View> */}
+
+            <View style={{
+              display: "flex",
+              justifyContent: "space-around",
+              paddingHorizontal: 10,
+              alignItems: "center",
+              backgroundColor: "#8FA3B5",
+              height: 150,
+              width: 150,
+              borderRadius: 10,
+            }} onTouchStart={() => router.push({ pathname: "/pages/employeeList", params: { title: "Liste des employees" } })}>
+              {/* <Image source={require("")}></Image> */}
+              <Text style={{
+                color: "white",
+                fontSize: 15,
+                textAlign: "center"
+              }}>Liste des employees</Text>
+            </View>
+        </View>
+      </View>
+  </View>
   );
 }
 
