@@ -46,25 +46,26 @@ export default function Login() {
       name: 'profile.jpg'
     });
 
-    if(employeeImage){
+    if (employeeImage) {
       setIsLoading(true);
       api.postData(api.apiUrl + "/auth/login", formData, tempToken, true)
-      .then(async (res) => {
+        .then(async (res) => {
 
-        await LocalStorageManagement.setItem("token", res.token);
-        const token = await LocalStorageManagement.getItem("token");
-        // console.log("Token récupéré:", token);
-        setIsDisplayCamera(false);
+          await LocalStorageManagement.setItem("token", res.token);
+          const token = await LocalStorageManagement.getItem("token");
+          // console.log("Token récupéré:", token);
+          setIsDisplayCamera(false);
 
-        if (token) {
-          router.replace("/");
-        } else {
-          console.error("Erreur: le token est null.");
-        }
+          if (token) {
+            router.replace("/");
+          } else {
+            console.error("Erreur: le token est null.");
+          }
 
-      }).catch((err) => {
-        throw new Error(err)
-      })
+        }).catch((err) => {
+          setIsLoading(false)
+          throw new Error(err)
+        })
     }
 
   }, [employeeImage])
@@ -78,11 +79,11 @@ export default function Login() {
         gap: 32,
       }}>
         <Image source={require("@/assets/images/logo.png")}
-        style={{
-          width: 100,
-          height: 100,
-          resizeMode: "contain",
-        }}
+          style={{
+            width: 100,
+            height: 100,
+            resizeMode: "contain",
+          }}
         ></Image>
         <Text style={{
           color: "white",
@@ -105,7 +106,7 @@ export default function Login() {
               backgroundColor: "white",
               marginBottom: 10,
               borderRadius: 5,
-              width: 0.8*Dimensions.get("window").width,
+              width: 0.8 * Dimensions.get("window").width,
               height: 45,
             }}
           />
@@ -120,30 +121,30 @@ export default function Login() {
               backgroundColor: "white",
               marginBottom: 10,
               borderRadius: 5,
-              width: 0.8*Dimensions.get("window").width,
+              width: 0.8 * Dimensions.get("window").width,
               height: 45,
             }}
             secureTextEntry={true}
           />
         </View>
         <Button onPress={() => handleSubmit()} color={"#224A6D"} title="Se connecter" />
-          {/*  */}
+        {/*  */}
       </View>
       {
         isDisplayCamera
-        ?
-        <View style={{
-          position: "absolute",
-          display: "flex",
-          justifyContent: "center",
-          alignContent: "center",
-        }}>
-          <CameraPopUp displayLoading={isLoading} setIsDisplayCamera={setIsDisplayCamera} setEmployeeImage={setEmployeeImage} customStyle={styles.cameraPopup} />
-        </View>
-        :
-        <View style={{
-          display: "none"
-        }}></View>
+          ?
+          <View style={{
+            position: "absolute",
+            display: "flex",
+            justifyContent: "center",
+            alignContent: "center",
+          }}>
+            <CameraPopUp displayLoading={isLoading} setIsDisplayCamera={setIsDisplayCamera} setEmployeeImage={setEmployeeImage} customStyle={styles.cameraPopup} />
+          </View>
+          :
+          <View style={{
+            display: "none"
+          }}></View>
       }
     </View>
   );

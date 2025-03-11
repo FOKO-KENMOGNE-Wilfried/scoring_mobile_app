@@ -1,16 +1,39 @@
+import API from '@/utils/API';
 import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { Button, Dimensions, Image, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function TabTwoScreen() {
 
   const router = useRouter()
+  const api = new API();
 
   async function logout() {
     LocalStorageManagement.removeItem('token');
     console.log('logged out');
     router.replace("/pages/login");
   }
+
+  useEffect(() => {
+    (async () => {
+      const token = await LocalStorageManagement.getItem("token")
+      api.getData(api.apiUrl + "/", token)
+        .then((res) => {
+
+          api.putData(api.apiUrl + "/", FormData, token)
+          .then(async (res) => {
+
+            api.postData(api.apiUrl + "/", FormData, token, true)
+          }).catch((err) => {
+            throw new Error(err);
+          })
+
+        }).catch((err) => {
+          throw new Error(err);
+        })
+    })();
+  }, [])
 
   return (
     <View style={styles.container}>

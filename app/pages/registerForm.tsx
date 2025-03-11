@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Button, Dimensions, StyleSheet, Text, TextInput, View, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import ImagePickers from '@/components/imagePicker';
+// import ImagePickers from '@/components/imagePicker';
 
 export default function RegisterForm() {
   const [name, setName] = useState("");
@@ -109,6 +111,9 @@ export default function RegisterForm() {
             />
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
+
+          <ImagePickers />
+
           <View style={styles.inputContainer}>
             <Text style={styles.textColor}>Rôle</Text>
             <View style={styles.pickerContainer}>

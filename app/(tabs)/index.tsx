@@ -1,9 +1,7 @@
 import { StyleSheet, Dimensions, Text, View, Image } from 'react-native';
 
-import { Redirect, useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 
 export default function HomeScreen() {
 
@@ -156,23 +154,6 @@ export default function HomeScreen() {
               }}>Ajouter un employee</Text>
             </View>
 
-            {/* <View style={{
-              display: "flex",
-              justifyContent: "space-around",
-              paddingHorizontal: 10,
-              alignItems: "center",
-              backgroundColor: "#8FA3B5",
-              height: 150,
-              width: 150,
-              borderRadius: 10,
-            }} onTouchStart={() => router.push({ pathname: "/", params: { title: "Pointage via un controller" } })}>
-              <Text style={{
-                color: "white",
-                fontSize: 15,
-                textAlign: "center"
-              }}>Assigner un employee a un site</Text>
-            </View> */}
-
             <View style={{
               display: "flex",
               justifyContent: "space-around",
@@ -191,6 +172,23 @@ export default function HomeScreen() {
               }}>Liste des employees</Text>
             </View>
         </View>
+        <View style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-around",
+              paddingHorizontal: 10,
+              alignItems: "center",
+              backgroundColor: "#8FA3B5",
+              height: 100,
+              borderRadius: 10,
+            }} onTouchStart={() => router.push({ pathname: "/", params: { title: "Generation des rapports" } })}>
+              {/* <Image source={require("")}></Image> */}
+              <Text style={{
+                color: "white",
+                fontSize: 15,
+                textAlign: "center"
+              }}>Generer des rapports</Text>
+            </View>
       </View>
   </View>
   );

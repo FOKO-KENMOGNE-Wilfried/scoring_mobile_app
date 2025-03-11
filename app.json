@@ -12,6 +12,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "y"
     },
+    "permissions": [
+      "CAMERA_ROLL"
+    ],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
