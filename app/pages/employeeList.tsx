@@ -1,20 +1,54 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import API from '@/utils/API';
+import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
 
 export default function EmployeeList() {
-  const [employees, setEmployees] = useState([
-    { id: "1", name: "Foko Kenmogne", email: "foko@example.com", role: "employee", isSuspended: false, site: "Aucun" },
-    { id: "2", name: "John Doe", email: "john.doe@example.com", role: "admin", isSuspended: false, site: "Site de Yaoundé" },
-    { id: "3", name: "Jane Smith", email: "jane.smith@example.com", role: "controller", isSuspended: true, site: "Site de COPSCECO" },
+  const [employees, setEmployees] = useState<customEmployeeResponseType[]>([]);
+
+  type customEmployeeResponseType = {
+    createAt : string,
+    employee:{
+      createAt: string,
+      email: string,
+      id: string,
+      is_active: boolean,
+      name: string,
+      phone_number: string,
+      position: string,
+      profile: string,
+      role: string,
+      surname: string,
+      updateat: string,
+    },
+    id: number,
+    site: {
+      area: number,
+      createAt: string,
+      id: number,
+      location: string,
+      name: string,
+      siteSchedules: string,
+      updateat: string,
+    },
+    updateat: string
+  }
+
+  const [sites, setSites] = useState<any[]>([
+    {
+      name: "All",
+      isSelected: true
+    }
   ]);
 
   const [filteredEmployees, setFilteredEmployees] = useState(employees);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const api = new API();
   const [editingRole, setEditingRole] = useState(null);
   const [editingSite, setEditingSite] = useState(null);
-  const [selectedSite, setSelectedSite] = useState("");
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [employeeSite, setEmployeeSite] = useState("All");
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   // Fonction de recherche
@@ -26,56 +60,82 @@ export default function EmployeeList() {
     } else {
       setFilteredEmployees(
         employees.filter((emp) =>
-          emp.name.toLowerCase().includes(query.toLowerCase()) ||
-          emp.email.toLowerCase().includes(query.toLowerCase()) ||
-          emp.role.toLowerCase().includes(query.toLowerCase())
+          emp.employee.name.toLowerCase().includes(query.toLowerCase()) ||
+          emp.employee.email.toLowerCase().includes(query.toLowerCase()) ||
+          emp.employee.role.toLowerCase().includes(query.toLowerCase())
         )
       );
     }
   };
 
-  const handleSuspend = (id: string) => {
-    setEmployees((prevEmployees) =>
-      prevEmployees.map((emp) =>
-        emp.id === id ? { ...emp, isSuspended: !emp.isSuspended } : emp
-      )
-    );
-    setFilteredEmployees((prevFilteredEmployees) =>
-      prevFilteredEmployees.map((emp) =>
-        emp.id === id ? { ...emp, isSuspended: !emp.isSuspended } : emp
-      )
-    );
+
+  const handleSuspend = async (id: string) => {
+    api.putData(api.apiUrl + `/employees/suspendEmployeeAccount/${id}`, {}, await LocalStorageManagement.getItem("token"), false)
+      .then(() => {
+        getAllEmployee();
+      }).catch((err) => {throw new Error(err)})
   };
 
-  const handleChangeRole = (id: string, newRole: string) => {
-    setEmployees((prevEmployees) =>
-      prevEmployees.map((emp) =>
-        emp.id === id ? { ...emp, role: newRole } : emp
-      )
-    );
-    setFilteredEmployees((prevFilteredEmployees) =>
-      prevFilteredEmployees.map((emp) =>
-        emp.id === id ? { ...emp, role: newRole } : emp
-      )
-    );
-    setEditingRole(null);
+
+  const handleChangeRole = async (id: string, newRole: string) => {
+    api.putData(api.apiUrl + `/employees/updateEmployeeRole/${id}`, {role: newRole}, await LocalStorageManagement.getItem("token"), false)
+    .then(() => {
+      getAllEmployee();
+      setEditingRole(null);
+    }).catch((err) => {throw new Error(err)})
   };
+
+
+  function setIsSelectedSite(index: number) {
+    const updatedSiteList = sites.map((site, i) => ({
+      ...site,
+      isSelected: i === index,
+    }));
+
+    const selectedSite = updatedSiteList[index];
+    setEmployeeSite(selectedSite.name === "All" ? "All" : selectedSite.id);
+    setSites(updatedSiteList);
+  }
+
 
   const handleAssignSite = () => {
-    setEmployees((prevEmployees) =>
-      prevEmployees.map((emp) =>
-        emp.id === editingSite ? { ...emp, site: selectedSite } : emp
-      )
-    );
-    setFilteredEmployees((prevFilteredEmployees) =>
-      prevFilteredEmployees.map((emp) =>
-        emp.id === editingSite ? { ...emp, site: selectedSite } : emp
-      )
-    );
-    setIsModalVisible(false);
-    setEditingSite(null);
-    setSelectedSite("");
+    console.log(selectedSite);
+    console.log(editingSite);
+
+    // setIsModalVisible(false);
+    // setEditingSite(null);
+    // setSelectedSite("");
   };
+
+  function getAllEmployee() {
+    api.getData(api.apiUrl + "/sites/getAllEmployee", null)
+    .then((res) => {
+      setEmployees(res.employees);
+      setFilteredEmployees(res.employees)
+    }).catch((err) => {
+      throw new Error(err);
+    })
+  }
+
+
+  useEffect(() => {
+    api.getData(api.apiUrl + "/sites/getAllSite", null)
+      .then((res: {sitesList: [any]}) => {
+        res.sitesList.map((site) => {
+          site.isSelected = false
+        })
+        setSites(
+          [
+            sites[0],
+            ...res.sitesList
+          ]
+        )
+        setSelectedSite(sites.filter((element) => element.name !== "All")[0]?.id);
+        getAllEmployee();
+      }).catch((err) => {
+        throw new Error(err);
+      })
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -87,29 +147,47 @@ export default function EmployeeList() {
         placeholder="Rechercher un employé..."
         style={styles.searchBar}
       />
+      <View style={{
+        display: "flex",
+        flexDirection: "row",
+        gap: 10
+      }}>
+        {
+          sites.map((site, i) => (
+            <View key={i} onTouchStart={(e) => setIsSelectedSite(i)} style={{
+              backgroundColor: `${site.isSelected ? "#224A6D" : "#DEDEDE"}`,
+              paddingVertical: 5,
+              paddingHorizontal: 15,
+              borderRadius: 50
+            }}>
+              <Text style={{color: `${site.isSelected ? "white" : "black"}`}}>{site.name}</Text>
+            </View>
+          ))
+        }
+      </View>
       <FlatList
         data={filteredEmployees}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.email}>{item.email}</Text>
-            <Text style={styles.role}>Rôle : {item.role.toUpperCase()}</Text>
-            <Text style={styles.site}>Site : {item.site}</Text>
+            <Text style={styles.name}>{item.employee.name}</Text>
+            <Text style={styles.email}>{item.employee.email}</Text>
+            <Text style={styles.role}>Rôle : {item.employee.role.toUpperCase()}</Text>
+            <Text style={styles.site}>Site : {item.site.name}</Text>
             <View style={styles.actions}>
               <TouchableOpacity
-                style={[styles.button, { backgroundColor: item.isSuspended ? "#FF6B6B" : "#6BCB77" }]}
-                onPress={() => handleSuspend(item.id)}
+                style={[styles.button, { backgroundColor: !item.employee.is_active ? "#FF6B6B" : "#6BCB77" }]}
+                onPress={() => handleSuspend(item.employee.id)}
               >
                 <Text style={styles.buttonText}>
-                  {item.isSuspended ? "Réactiver" : "Suspendre"}
+                  {!item.employee.is_active ? "Réactiver" : "Suspendre"}
                 </Text>
               </TouchableOpacity>
-              {editingRole === item.id ? (
+              {editingRole === item.employee.id ? (
                 <Picker
-                  selectedValue={item.role}
+                  selectedValue={item.employee.role}
                   style={{ flex: 1, backgroundColor: "#f0f0f0" }}
-                  onValueChange={(value) => handleChangeRole(item.id, value)}
+                  onValueChange={(value) => handleChangeRole(item.employee.id, value)}
                 >
                   <Picker.Item label="Employé" value="employee" />
                   <Picker.Item label="Administrateur" value="admin" />
@@ -118,7 +196,7 @@ export default function EmployeeList() {
               ) : (
                 <TouchableOpacity
                   style={styles.button}
-                  onPress={() => setEditingRole(item.id)}
+                  onPress={() => setEditingRole(item.employee.id)}
                 >
                   <Text style={styles.buttonText}>Modifier le rôle</Text>
                 </TouchableOpacity>
@@ -126,7 +204,7 @@ export default function EmployeeList() {
               <TouchableOpacity
                 style={styles.button}
                 onPress={() => {
-                  setEditingSite(item.id);
+                  setEditingSite(item.employee.id);
                   setIsModalVisible(true);
                 }}
               >
@@ -147,8 +225,11 @@ export default function EmployeeList() {
               onValueChange={(itemValue) => setSelectedSite(itemValue)}
               style={styles.picker}
             >
-              <Picker.Item label="Site de COPSCECO" value="Site de COPSCECO" />
-              <Picker.Item label="Site de Yaoundé" value="Site de Yaoundé" />
+              {
+                sites.filter((element) => element.name !== "All").map((site) => (
+                  <Picker.Item key={site.id} label={site.name} value={site.id} />
+                ))
+              }
             </Picker>
             <View style={styles.modalActions}>
               <TouchableOpacity

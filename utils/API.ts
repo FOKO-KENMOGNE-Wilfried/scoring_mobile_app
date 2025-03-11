@@ -1,6 +1,6 @@
 export default class API {
-  private _devApiUrl: string = "http://192.168.0.158:3000";
-  
+  private _devApiUrl: string = "http://192.168.0.41:3000";
+
   public get apiUrl() {
     return this._devApiUrl;
   }
@@ -20,7 +20,10 @@ export default class API {
             Authorization: token ? `Bearer ${token}` : "",
           };
 
-      const options: RequestInit = {
+      const options: RequestInit = method == "GET" ?  {
+        method,
+        headers,
+      } : {
         method,
         headers,
         body: isMultipart ? (body as BodyInit) : JSON.stringify(body),

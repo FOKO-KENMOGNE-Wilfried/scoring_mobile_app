@@ -3,7 +3,9 @@ import { Text, TouchableOpacity, View, Image, Platform } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
-export default function ImagePickers() {
+export default function ImagePickers(
+    {profile, setProfile} : {profile: any, setProfile: (newProfile: any) => void}
+) {
     const [avatarSource, setAvatarSource] = useState(null);
 
     const handleGalleryClick = async () => {
@@ -23,7 +25,7 @@ export default function ImagePickers() {
         } else if (result.errorMessage) {
             console.log('ImagePicker Error: ', result.errorMessage);
         } else if (result.assets && result.assets.length > 0) {
-            setAvatarSource(result.assets[0].uri);
+            setProfile(result.assets[0].uri);
         }
     };
 
@@ -50,9 +52,9 @@ export default function ImagePickers() {
                 <Text style={{ color: 'white' }}>Open Gallery</Text>
             </TouchableOpacity>
 
-            {avatarSource && (
+            {profile && (
                 <Image
-                    source={{ uri: avatarSource }}
+                    source={{ uri: profile }}
                     style={{ width: 200, height: 200, marginTop: 20, borderRadius: 10 }}
                 />
             )}

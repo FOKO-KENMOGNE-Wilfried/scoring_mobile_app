@@ -171,6 +171,23 @@ export default function HomeScreen() {
                 textAlign: "center"
               }}>Liste des employees</Text>
             </View>
+
+            {/* <View style={{
+              display: "flex",
+              justifyContent: "space-around",
+              paddingHorizontal: 10,
+              alignItems: "center",
+              backgroundColor: "#8FA3B5",
+              height: 150,
+              width: 150,
+              borderRadius: 10,
+            }} onTouchStart={() => router.push({ pathname: "/", params: { title: "Liste des employees" } })}>
+              <Text style={{
+                color: "white",
+                fontSize: 15,
+                textAlign: "center"
+              }}>Ajouter un site de travail</Text>
+            </View> */}
         </View>
         <View style={{
               display: "flex",

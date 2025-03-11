@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { Button, Dimensions, StyleSheet, Text, TextInput, View, ScrollView } from 'react-native';
+import { Button, Dimensions, StyleSheet, Text, TextInput, View, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import ImagePickers from '@/components/imagePicker';
+import API from '@/utils/API';
+import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
+import AppLoader from '@/components/ui/AppLoader';
+import { useRouter } from 'expo-router';
 // import ImagePickers from '@/components/imagePicker';
 
 export default function RegisterForm() {
@@ -12,6 +16,10 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("employee");
   const [position, setPosition] = useState("");
+  const [profile, setProfile] = useState("");
+  const [isDisplayLoader, setIsDisplayLoader] = useState(false)
+  const api = new API();
+  const router = useRouter();
 
   // Gestion des erreurs
   const [errors, setErrors] = useState<any>({});
@@ -30,15 +38,19 @@ export default function RegisterForm() {
     if (!password.trim() || password.length < 6) {
       newErrors.password = "Le mot de passe doit contenir au moins 6 caractères.";
     }
+    if (!profile.trim()) {
+      newErrors.password = "La photo de profil de l'utilisateur est requise.";
+    }
     if (!position.trim()) newErrors.position = "Le poste est requis.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  async function handleSubmit() {
     if (validateForm()) {
-      const formData = {
+      const token = await LocalStorageManagement.getItem('token');
+      const data = {
         name,
         surname,
         phone_number: phoneNumber,
@@ -47,13 +59,51 @@ export default function RegisterForm() {
         role,
         position,
       };
-
-      console.log("Données soumises :", formData);
+      const formData = new FormData();
+      formData.append("profile", {
+        uri: profile,
+        type: 'image/jpeg',
+        name: 'profile.jpg'
+      });
+      // console.log("Données soumises :", data , formData.get("profile"));
+      setIsDisplayLoader(true);
+      api.postData(api.apiUrl + "/auth/signup", data, token, false)
+        .then((res) => {
+          console.log(res);
+          api.putData(api.apiUrl + `/employees/addEmployeeProfile/${res.employeeDataSent.id}`, formData, token, true)
+            .then((res) => {
+              console.log(res)
+              setIsDisplayLoader(false);
+              router.replace("/");
+            }).catch((err) => {
+              setIsDisplayLoader(false);
+              alert("Une erreur est survenu lors de la procedure, veillez reesayer ulterieurement !");
+              throw new Error(err);
+            });
+        }).catch((err) => {
+          setIsDisplayLoader(false);
+          alert("Une erreur est survenu lors de la procedure, veillez reesayer ulterieurement !");
+          throw new Error(err);
+        });
     }
   };
 
   return (
     <View style={styles.container}>
+      {
+        isDisplayLoader
+        ?
+        <View style={{
+          position: "absolute",
+          zIndex: 10,
+          width: Dimensions.get("window").width,
+          height: Dimensions.get("window").height
+        }}>
+          <AppLoader message='Enregistrement en cours...' />
+        </View>
+        :
+        <View style={{display: "none"}}></View>
+      }
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
           <Text style={styles.title}>Formulaire d'inscription</Text>
@@ -112,7 +162,10 @@ export default function RegisterForm() {
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
-          <ImagePickers />
+          <View>
+            <ImagePickers profile={profile} setProfile={setProfile} />
+            {errors.profile && <Text style={styles.errorText}>{errors.profile}</Text>}
+          </View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.textColor}>Rôle</Text>
@@ -138,7 +191,7 @@ export default function RegisterForm() {
             />
             {errors.position && <Text style={styles.errorText}>{errors.position}</Text>}
           </View>
-          <Button onPress={handleSubmit} color={"#224A6D"} title="S'inscrire" />
+          <Button onPress={() => handleSubmit()} color={"#224A6D"} title="S'inscrire" />
         </View>
       </ScrollView>
     </View>

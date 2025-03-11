@@ -1,5 +1,4 @@
 import CameraPopUp from '@/components/CameraPopUp';
-import AppLoader from '@/components/ui/AppLoader';
 import API from '@/utils/API';
 import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
 import { useRouter } from 'expo-router';
