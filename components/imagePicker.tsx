@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Text, TouchableOpacity, View, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Text, TouchableOpacity, View, Image, Platform } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 export default function ImagePickers() {
     const [avatarSource, setAvatarSource] = useState(null);
@@ -25,6 +26,23 @@ export default function ImagePickers() {
             setAvatarSource(result.assets[0].uri);
         }
     };
+
+    const requestPermission = async () => {
+        const result = await request(
+            Platform.OS === 'android'
+                ? PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
+                : PERMISSIONS.IOS.PHOTO_LIBRARY,
+        );
+        if (result !== RESULTS.GRANTED) {
+            alert('Permission requise pour accéder à la galerie.');
+        }
+    };
+
+    useEffect(() => {
+        (async () => {
+            requestPermission();
+        })()
+    }, [])
 
     return (
         <View style={{ alignItems: 'center', marginTop: 50 }}>
