@@ -7,10 +7,10 @@ export default function HomeScreen() {
 
   const router = useRouter();
 
-  const [userRole, setUserRole] = useState<"employee" | "admin" | "controller">("admin");
+  const [userRole, setUserRole] = useState<"employee" | "admin" | "controller">("employee");
 
   return (
-    userRole === "employee" ?
+    userRole === "employee" || "controller" ?
     <View style={styles.container}>
         <View style={{
           borderWidth: 1,

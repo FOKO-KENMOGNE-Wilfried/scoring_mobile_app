@@ -95,16 +95,26 @@ export default function EmployeeList() {
     const selectedSite = updatedSiteList[index];
     setEmployeeSite(selectedSite.name === "All" ? "All" : selectedSite.id);
     setSites(updatedSiteList);
+    if(selectedSite.name ==  "All") {
+      getAllEmployee();
+    } else {
+      getEmployeeBySite(updatedSiteList.filter((element) => element.isSelected)[0].id);
+    }
   }
 
 
-  const handleAssignSite = () => {
+  const handleAssignSite = async () => {
     console.log(selectedSite);
     console.log(editingSite);
 
-    // setIsModalVisible(false);
-    // setEditingSite(null);
-    // setSelectedSite("");
+    api.postData(api.apiUrl + `/sites/addEmployeeToSite/${selectedSite}`, {employee_id: editingSite}, await LocalStorageManagement.getItem("token"), false)
+    .then(() => {
+      getAllEmployee();
+      setEditingSite(null);
+      setSelectedSite("");
+      setIsModalVisible(false);
+    }).catch((err) => {throw new Error(err)})
+
   };
 
   function getAllEmployee() {
@@ -117,6 +127,15 @@ export default function EmployeeList() {
     })
   }
 
+  function getEmployeeBySite(siteId: number) {
+    api.getData(api.apiUrl + `/sites/getEmployeeBySite/${siteId}`, null)
+    .then((res) => {
+      setEmployees(res.employees);
+      setFilteredEmployees(res.employees)
+    }).catch((err) => {
+      throw new Error(err);
+    })
+  }
 
   useEffect(() => {
     api.getData(api.apiUrl + "/sites/getAllSite", null)
