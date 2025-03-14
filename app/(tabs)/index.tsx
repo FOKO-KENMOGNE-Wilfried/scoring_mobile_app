@@ -1,16 +1,45 @@
 import { StyleSheet, Dimensions, Text, View, Image } from 'react-native';
 
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
+import API from '@/utils/API';
+import * as jwtDecode from "jwt-decode";
 
 export default function HomeScreen() {
 
   const router = useRouter();
+  const api = new API();
 
-  const [userRole, setUserRole] = useState<"employee" | "admin" | "controller">("employee");
+  const [userRole, setUserRole] = useState<"employee" | "admin" | "controller">("admin");
+  const [userId, setUserId] = useState("");
+  const [userData, setUserData] = useState([])
+
+  useEffect(() => {
+    (async () => {
+      setUserRole(await LocalStorageManagement.getItem("role"));
+      setUserId(jwtDecode.jwtDecode(await LocalStorageManagement.getItem("token")).id);
+      api.getData(api.apiUrl + `/employees/employee/${jwtDecode.jwtDecode(await LocalStorageManagement.getItem("token")).id}`, await LocalStorageManagement.getItem("token"))
+        .then((res) => {
+          console.log(res);
+          setUserData(res.employee);
+        }).catch((err) => {throw new Error(err);});
+    })();
+  }, [])
+
+  async function sendScoringRequest() {
+    api.postData(api.apiUrl + `/scoring/requestForScoring/${ userId }`, {}, null, false)
+      .then((res) => {
+        if(res.message === "No more scoring permitted") {
+          alert("Aucun pointage supplementaire n'est autorise de la journnee")
+        } else {
+          alert("Requete de pointage envoyer au controller avec succes")
+        }
+      }).catch((err) => {throw new Error(err);});
+  }
 
   return (
-    userRole === "employee" || "controller" ?
+    userRole === "employee" || userRole === "controller" ?
     <View style={styles.container}>
         <View style={{
           borderWidth: 1,
@@ -27,7 +56,7 @@ export default function HomeScreen() {
           <Text style={{
             fontWeight: "bold",
             fontSize: 24,
-          }}>FOKO KENMOGNE Wilfried</Text>
+          }}>{userData.name + " " + userData.surname}</Text>
         </View>
         {/*  */}
         <View style={{
@@ -75,13 +104,37 @@ export default function HomeScreen() {
               height: 120,
               borderRadius: 10,
             }}
-            onTouchStart={() => router.push({ pathname: "/pages/scoringByController", params: { title: "Pointage via un controller" } })}
+            // onTouchStart={() => router.push({ pathname: "/pages/scoringByController", params: { title: "Pointage via un controller" } })}
+            onTouchStart={() => sendScoringRequest()}
             >
               {/* <Image source={require("")}></Image> */}
               <Text style={{
                 color: "white",
                 fontSize: 15
               }}>Envoyer une requete au controller</Text>
+            </View>
+          :
+          <View></View>
+          }
+          { userRole == "controller" ?
+            <View style={{
+              display: "flex",
+              justifyContent: "space-around",
+              alignItems: "center",
+              flexDirection: "row",
+              gap: 10,
+              marginBottom: 10,
+              backgroundColor: "#8FA3B5",
+              height: 120,
+              borderRadius: 10,
+            }}
+            onTouchStart={() => router.push({ pathname: "/pages/scoringList", params: { title: "Pointage via un controller" } })}
+            >
+              {/* <Image source={require("")}></Image> */}
+              <Text style={{
+                color: "white",
+                fontSize: 15
+              }}>Liste des requetes</Text>
             </View>
           :
           <View></View>

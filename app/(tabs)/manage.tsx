@@ -1,13 +1,15 @@
 import API from '@/utils/API';
 import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import * as jwtDecode from 'jwt-decode';
+import { useEffect, useState } from 'react';
 import { Button, Dimensions, Image, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function TabTwoScreen() {
 
   const router = useRouter()
   const api = new API();
+  const [userData, setUserData] = useState<any>()
 
   async function logout() {
     LocalStorageManagement.removeItem('token');
@@ -18,20 +20,19 @@ export default function TabTwoScreen() {
   useEffect(() => {
     (async () => {
       const token = await LocalStorageManagement.getItem("token")
-      api.getData(api.apiUrl + "/", token)
+      api.getData(api.apiUrl + `/employees/employee/${jwtDecode.jwtDecode(await LocalStorageManagement.getItem("token")).id}`, await LocalStorageManagement.getItem("token"))
         .then((res) => {
+          setUserData(res.employee);
 
-          api.putData(api.apiUrl + "/", FormData, token)
-          .then(async (res) => {
+          // api.putData(api.apiUrl + "/", FormData, token)
+          // .then(async (res) => {
+          //   api.postData(api.apiUrl + "/", FormData, token, true)
+          // }).catch((err) => {
+          //   throw new Error(err);
+          // })
 
-            api.postData(api.apiUrl + "/", FormData, token, true)
-          }).catch((err) => {
-            throw new Error(err);
-          })
+        }).catch((err) => {throw new Error(err);});
 
-        }).catch((err) => {
-          throw new Error(err);
-        })
     })();
   }, [])
 
@@ -45,19 +46,37 @@ export default function TabTwoScreen() {
           padding: 20,
           gap: 20,
         }}>
-          <Image
-            source={require("@/assets/images/profile.jpg")}
-            style={{
-              width: 200,
-              height: 200,
-              borderRadius: 100,
-            }}
-          ></Image>
+          <View style={{
+            borderColor: "#224A6D",
+            borderStyle: "solid",
+            borderWidth: 2,
+            borderRadius: 100,
+            overflow: "hidden"
+          }}>
+            {
+              !userData ?
+              <Image
+                source={require("@/assets/images/adaptive-icon.png")}
+                style={{
+                  width: 200,
+                  height: 200,
+                }}
+              ></Image>
+              :
+              <Image
+                source={{uri: `${api.apiUrl + "/" + userData?.profile}`}}
+                style={{
+                  width: 200,
+                  height: 200,
+                }}
+              ></Image>
+            }
+          </View>
           <Text style={{
             fontWeight: "semibold",
             fontSize: 24,
             marginTop: 10,
-          }}>Wilfried FOKO KENOMGNE</Text>
+          }}>{userData?.name + " " + userData?.surname}</Text>
         </View>
         <View style={{
             display: "flex",

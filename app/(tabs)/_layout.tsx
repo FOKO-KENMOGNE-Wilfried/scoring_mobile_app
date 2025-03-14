@@ -8,10 +8,13 @@ import { Colors } from '@/constants/Colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LocalStorageManagement } from '@/utils/LocalStorageManagement';
 import * as jwtDecode from "jwt-decode";
+import { io } from "socket.io-client";
+import API from '@/utils/API';
 
 export default function TabLayout() {
 
   const router = useRouter();
+  const api = new API();
 
     useEffect(() => {
       const fetchToken = async () => {
@@ -23,6 +26,7 @@ export default function TabLayout() {
             return;
           }
           const expirationTime = jwtDecode.jwtDecode(res).exp as unknown as number;
+          await LocalStorageManagement.setItem("role", jwtDecode.jwtDecode(res).role);
           console.log(res)
           if (!expirationTime || expirationTime * 1000 < new Date().getTime()) {
             console.log("Le token a expiré.");
@@ -37,6 +41,19 @@ export default function TabLayout() {
         }
       };
       fetchToken();
+    }, []);
+
+    useEffect(() => {
+      const socket = io(api.apiUrl);
+
+      socket.on("newData", (data) => {
+        console.log("Data received: ", data);
+      })
+
+      return () => {
+        socket.disconnect();
+      }
+
     }, []);
 
   return (
