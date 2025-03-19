@@ -15,6 +15,8 @@ export default function RootLayout() {
   });
 
   const params = useLocalSearchParams();
+  // console.log("params")
+  // console.log(params)
 
   useEffect(() => {
     if (loaded) {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Dimensions, StyleSheet, Text, TextInput, View, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import ImagePickers from '@/components/imagePicker';
@@ -15,6 +15,8 @@ export default function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("employee");
+  const [site, setSite] = useState<any[]>();
+  const [selectedSite, setSelectedSite] = useState<any[]>();
   const [position, setPosition] = useState("");
   const [profile, setProfile] = useState("");
   const [isDisplayLoader, setIsDisplayLoader] = useState(false)
@@ -65,16 +67,16 @@ export default function RegisterForm() {
         type: 'image/jpeg',
         name: 'profile.jpg'
       });
-      // console.log("Données soumises :", data , formData.get("profile"));
       setIsDisplayLoader(true);
       api.postData(api.apiUrl + "/auth/signup", data, token, false)
         .then((res) => {
-          console.log(res);
           api.putData(api.apiUrl + `/employees/addEmployeeProfile/${res.employeeDataSent.id}`, formData, token, true)
-            .then((res) => {
-              console.log(res)
-              setIsDisplayLoader(false);
-              router.replace("/");
+            .then(() => {
+              api.postData(api.apiUrl + `/sites/addEmployeeToSite/${selectedSite}`, {employee_id: res.employeeDataSent.id}, token, false)
+                .then(() => {
+                  setIsDisplayLoader(false);
+                  router.replace("/");
+                }).catch((err) => {throw new Error(err)});
             }).catch((err) => {
               setIsDisplayLoader(false);
               alert("Une erreur est survenu lors de la procedure, veillez reesayer ulterieurement !");
@@ -87,6 +89,18 @@ export default function RegisterForm() {
         });
     }
   };
+
+  useEffect(() => {
+      api.getData(api.apiUrl + "/sites/getAllSite", null)
+        .then((res: { sitesList: [any] }) => {
+          res.sitesList.map((site) => {
+            site.isSelected = false
+          })
+          setSite(res.sitesList)
+        }).catch((err) => {
+          throw new Error(err);
+        })
+    }, [])
 
   return (
     <View style={styles.container}>
@@ -181,12 +195,30 @@ export default function RegisterForm() {
               </Picker>
             </View>
           </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.textColor}>Site d'affectation</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedSite}
+                onValueChange={(itemValue) => setSelectedSite(itemValue)}
+                style={styles.picker}
+              >
+                {
+                  site?.map((item, index) => (
+                    <Picker.Item key={index} label={item.name} value={item.id} />
+                  ))
+                }
+              </Picker>
+            </View>
+          </View>
+
           <View style={styles.inputContainer}>
             <Text style={styles.textColor}>Position</Text>
             <TextInput
               onChangeText={setPosition}
               value={position}
-              placeholder="Votre poste (ex: manager)"
+              placeholder="Entrez le poste (ex: manager)"
               style={styles.input}
             />
             {errors.position && <Text style={styles.errorText}>{errors.position}</Text>}
@@ -201,63 +233,83 @@ export default function RegisterForm() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#8FA3B5",
+    backgroundColor: "#f0f4f8", // Couleur de fond modernisée
   },
   scrollContainer: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 20,
     paddingHorizontal: 10,
   },
   formContainer: {
     display: "flex",
-    gap: 10,
+    gap: 15,
     alignItems: "center",
     width: "100%",
     backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 10,
+    padding: 25,
+    borderRadius: 15,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6, // Meilleur effet d'ombre
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#224A6D",
-    marginBottom: 10,
+    marginBottom: 15,
   },
   inputContainer: {
     width: "100%",
-    marginBottom: 10,
+    marginBottom: 15,
   },
   input: {
-    padding: 10,
-    backgroundColor: "white",
-    borderRadius: 5,
+    padding: 12,
+    backgroundColor: "#f9f9f9", // Fond des champs plus neutre
+    borderRadius: 8,
     borderColor: "#ccc",
     borderWidth: 1,
-    height: 45,
+    height: 50,
   },
   textColor: {
     color: "#224A6D",
     marginBottom: 5,
+    fontWeight: "600",
+    fontSize: 16, // Texte légèrement plus grand
   },
   pickerContainer: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
+    borderRadius: 8,
     overflow: "hidden",
   },
   picker: {
-    // height: 45,
-    // backgroundColor: "#fff",
+    backgroundColor: "#f9f9f9",
   },
   errorText: {
     color: "red",
-    fontSize: 12,
+    fontSize: 14,
     marginTop: 5,
+    fontWeight: "500",
+  },
+  button: {
+    backgroundColor: "#224A6D",
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });

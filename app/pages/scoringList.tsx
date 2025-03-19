@@ -36,7 +36,8 @@ export default function ScoringList() {
   return (
     <View style={styles.container}>
       <Text style={{
-
+        fontSize: 24,
+        fontWeight: "bold"
       }}>Liste des requetes</Text>
       {
         scoringRequestList.map((scoringRequest) => (

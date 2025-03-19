@@ -1,5 +1,5 @@
 export default class API {
-  private _devApiUrl: string = "http://10.79.187.58:3000";
+  private _devApiUrl: string = "http://10.50.92.248:3000";
 
   public get apiUrl() {
     return this._devApiUrl;
